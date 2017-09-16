@@ -1,0 +1,66 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+/*task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from tasks.javadoc.destinationDir
+}*/
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.sourceFiles
+    classifier = 'sources'
+}
+
+configurations {
+    archives {
+        extendsFrom configurations.default
+    }
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'FtcAutoTransitioner'
+                packaging 'aar'
+                artifactId 'ftc-auto-transitioner'
+                description 'A tool to automatically transition between autonomous and teleop in FTC'
+                url 'http://github.com/KNO3Robotics/FtcAutoTransitioner'
+
+                scm {
+                    connection 'scm:git@github.com:KNO3Robotics/FtcAutoTransitioner.git'
+                    developerConnection 'scm:git@github.com:KNO3Robotics/FtcAutoTransitioner.git'
+                    url 'scm:git@github.com:KNO3Robotics/FtcAutoTransitioner.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The MIT License'
+                        url 'https://opensource.org/licenses/MIT'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'jaxnb'
+                        name 'Jaxon Brown'
+                    }
+                }
+            }
+        }
+    }
+}
